@@ -106,7 +106,7 @@ class PowerFlowSimulator:
                         'res_line': deepcopy(self.net.res_line[self.net.line['in_service']].values)
                     }
                     time_step_results[time_step] = lfa_results
-                    # print(lfa_results)
+                    print(self.net.res_line)
                 except pp.LoadflowNotConverged:
                     print(f'Load flow did not converge for time step {time_step}, season {season}.')
                     return None  # Terminate and return None to indicate failure
