@@ -8,9 +8,9 @@ from copy import deepcopy
 import h5py
 
 # Constants
-NUM_NETWORKS_TO_SIMULATE = 1
+NUM_NETWORKS_TO_SIMULATE = 50
 data = 'raw_data/load_seasons.csv'
-re_configuration = False
+re_configuration = True
 network = nw.case33bw()
 
 class PowerFlowSimulator:
@@ -106,7 +106,6 @@ class PowerFlowSimulator:
                         'res_line': deepcopy(self.net.res_line[self.net.line['in_service']].values)
                     }
                     time_step_results[time_step] = lfa_results
-                    print(self.net.res_line)
                 except pp.LoadflowNotConverged:
                     print(f'Load flow did not converge for time step {time_step}, season {season}.')
                     return None  # Terminate and return None to indicate failure
@@ -131,7 +130,7 @@ class PowerFlowSimulator:
         # plt.show()
 
     def save_results(self):
-        with h5py.File('raw_data/33_bus_with_pl_ql.h5', 'w') as f:
+        with h5py.File('raw_data/dataset_with_pl_ql.h5', 'w') as f:
             for net_id, net_data in self.all_results.items():
                 net_group = f.create_group(f'network_{net_id}')
                 static_group = net_group.create_group('network_config')

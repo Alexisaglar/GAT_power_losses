@@ -29,36 +29,37 @@ def create_dataset(file):
                     for time_step_key in season_group.keys():
                         time_step_group = season_group[time_step_key]
 
-                        # extract edge features (x, r, length)
+                        ## extract edge features (x, r, length)
                         line_network_data = static_data['line']
                         line_network_data = line_network_data[:, 2:5] 
-                        line_features = time_step_group['res_line'][:, [0,1]]
+                        line_features = time_step_group['res_line'][:, [0,1,4,5]]
                         edge_features = np.concatenate((line_network_data, line_features), axis=1)
 
-                        # extract target values (voltage magnitude and angle)
+                        ## create edge index  (from_bus and to_bus in first two columns)
+                        edge_index = np.vstack((static_data['line'][:, 0], static_data['line'][:, 1])).astype(int)
+
+                        ## extract target values (voltage magnitude and angle)
                         # target_bus = time_step_group['res_line'][:, [4,5]]  
-                        target_line_losses = time_step_group['res_line'][:, [4,5]]  
+                        # target_line_losses = time_step_group['res_line'][:, [4,5]]  
+                        target_bus = time_step_group['res_bus'][:, [0]]
+                        
                         
                         # extract node features (p and q)
-                        node_features = time_step_group['res_bus'][:, :]
+                        node_features = time_step_group['res_bus'][:, [2,3]]
                         # node_features = np.concatenate((line_features, bus_features))
 
-                        # create edge index  (from_bus and to_bus in first two columns)
-                        edge_index = np.vstack((line_network_data[:, 0], line_network_data[:, 1])).astype(int)
 
                         # convert to torch tensors
                         node_features = torch.tensor(node_features, dtype=torch.float)
                         edge_features = torch.tensor(edge_features, dtype=torch.float)
                         edge_index = torch.tensor(edge_index, dtype=torch.long)
-                        targets = torch.tensor(target_line_losses, dtype=torch.float)
+                        targets = torch.tensor(target_bus, dtype=torch.float)
                         
                         # create data object
                         data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
                         data_list.append(data)
                         target_list.append(targets)
 
-
-                        print(data)
     return data_list, target_list
 
 # create_dataset('raw_data/33_bus_with_pl_ql.h5')

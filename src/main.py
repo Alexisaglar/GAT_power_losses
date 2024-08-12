@@ -61,9 +61,9 @@ def main():
     )
 
     model = GATNet().to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
     criterion = torch.nn.MSELoss()
-
+    
     patience = 15
     best_val_loss = float("inf")
     epochs_no_improve = 0
@@ -92,7 +92,7 @@ def main():
             break
 
         print(
-            f"Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Test Loss: {test_loss:.4f}"
+            f"Epoch {epoch+1}, Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Test Loss: {test_loss:.6f}"
         )
 
     plot_performance(train_losses, test_losses)

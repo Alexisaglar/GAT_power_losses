@@ -5,7 +5,8 @@ def train_model(model, data_loader, criterion, optimizer, device, epoch, checkpo
     total_loss = 0
     for data, targets in data_loader:
         data = data.to(device)
-        targets = targets.view(-1,2)
+        # targets = targets.view(-1,2)
+        targets = targets.view(-1,1)
         targets = targets.to(device)
 
         optimizer.zero_grad()
