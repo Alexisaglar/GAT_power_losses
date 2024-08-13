@@ -1,4 +1,4 @@
-# from matplotlib import figure
+from matplotlib import figure
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import networkx as nx
@@ -15,7 +15,7 @@ def load_data_and_model(model_path, data_path):
     model.eval()
 
     data_list, target_list = create_dataset(data_path)
-    return model, data_list, device, target_list  # Only return the first data point
+    return model, data_list[1000], device, target_list  # Only return the first data point
     # return model, data_list, device  # Only return the first data point
 
 
@@ -32,12 +32,12 @@ def evaluate_model(model, data, device):
 
 
 def visualize_graph(edges, scores):
-    G = nx.Graph()  
+    G = nx.Graph()
     for edge, weight in zip(edges, scores):
         G.add_edge(edge[0], edge[1], weight=weight)
 
-    fig, ax = plt.subplots(figsize=(14, 10))
-
+    plt.figure(figsize=(14, 10))
+    ax = plt.gca()
 
     pos = nx.spring_layout(G, k=0.9, iterations=600, weight="weight")
     weights = [G[u][v]["weight"] for u, v in G.edges()]
@@ -54,7 +54,7 @@ def visualize_graph(edges, scores):
     )
 
     nx.draw_networkx_labels(G, pos)
-    
+
     # Enhanced colorbar
     sm = plt.cm.ScalarMappable(
         cmap=plt.cm.YlOrRd, norm=plt.Normalize(vmin=min(scores), vmax=max(scores))
@@ -64,53 +64,47 @@ def visualize_graph(edges, scores):
     plt.title("Graph Attention Network Visualization")
     plt.savefig(f'plots/attention_visualisation', dpi=300)
     # plt.show()
-    return fig, ax, G, pos
+    return plt
 
-def update(frame, ax, G, pos, target_list):
-    ax.clear()  # Clear the previous frame
-    # You can update the visualization based on the frame here
-    scores = target_list[frame]  # Update with new scores or edges
-    weights = [G[u][v]["weight"] for u, v in G.edges()]
-    edge_colors = plt.cm.YlOrRd(np.array(weights) / max(weights))
-    
-    nx.draw_networkx_nodes(G, pos, node_color="skyblue", ax=ax)
-    nx.draw_networkx_edges(
-        G, pos, edgelist=G.edges(), width=np.array(weights) * 5, edge_color=edge_colors, ax=ax
-    )
-    nx.draw_networkx_labels(G, pos, ax=ax)
-    plt.title(f"Graph Attention Network Visualization - Frame {frame}")
+# def update(frame):
+#     plt.set_data(target_list[frame])
+#     return plt
+
+
 
 def main():
     model_path = "checkpoints/best_model.pth"
     # data_path = "raw_data/network_results.h5"
     data_path = "raw_data/single_network_comparison.h5"
-    model, data, device, target_list = load_data_and_model(model_path, data_path)
-    output, edges, scores = evaluate_model(model, data[i], device)
-    fig, ax, G, pos = visualize_graph(edges, scores)
-
-    animation = FuncAnimation(
-        fig = fig,
-        func = update,
-        frames=len(target_list),
-        fargs=(ax, G, pos, target_list),
-        interval=1,
-        repeat=False
-    )
+    model, first_data, device, target_list = load_data_and_model(model_path, data_path)
+    output, edges, scores = evaluate_model(model, first_data, device)
     # plt.plot(range(0,1440,1), target_list[:1440])
     # plt.plot(target_list[1000],output.cpu().numpy())
     # plt.plot(target_list[1440], output.cpu().numpy())
     # plt.plot()
     # print(target_list)
     # plt.plot(len(output), output)
-    
+
+    # fig, axis = plt.subplots()
+    # animated_plot, = axis.plot([],[])
+    # axis.plot(x,y)
+    # animation = FuncAnimation(
+    #     fig = visualize_graph(edges, scores),
+    #     func = update,
+    #     frames = len(target_list),
+    #     interval = 100,
+    # )
+
     # print(target_list[1000], output)
-    # visualize_graph(edges, scores)
+    visualize_graph(edges, scores)
+    print(scores)
     # plt.figure(figsize=(15, 10))
     # plt.plot(target_list[1000])
     # plt.plot(output.cpu().numpy())
     # plt.xticks(range(0,33,1))
     # plt.yticks(np.arange(0.95,1,0.01))
     # plt.title('Output - Targets')
+    plt.show()
 
 
 if __name__ == "__main__":

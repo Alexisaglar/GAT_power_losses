@@ -34,7 +34,7 @@ def plot_performance(train_loss, val_loss):
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"This training is using {device}")
-    data_list, target_list = create_dataset("raw_data/network_results.h5")
+    data_list, target_list = create_dataset("raw_data/dataset_random_loads.h5")
     data_train, data_val, data_test, target_train, target_val, target_test = split_data(
         data_list, target_list
     )

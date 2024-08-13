@@ -12,8 +12,8 @@ def load_data_and_model(model_path, data_path):
     model = GATNet().to(device)
     model.load_state_dict(torch.load(model_path))
     model.eval()
-
     data_list, target_list = create_dataset(data_path)
+
     return model, data_list, device, target_list  # Return the full dataset
 
 
@@ -95,6 +95,7 @@ def main():
         repeat=False
     )
 
+    # animation.save('')
     plt.show()
 
 

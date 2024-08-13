@@ -8,7 +8,7 @@ from copy import deepcopy
 import h5py
 
 # Constants
-NUM_NETWORKS_TO_SIMULATE = 50
+NUM_NETWORKS_TO_SIMULATE = 100
 data = 'raw_data/load_seasons.csv'
 re_configuration = True
 network = nw.case33bw()
@@ -93,12 +93,15 @@ class PowerFlowSimulator:
                 self.reset_and_apply_loads(time_step, season)
                 try:
                     pp.runpp(self.net, verbose=True, numba=False)
-                    if np.any((self.net.res_bus.vm_pu < 0.9) | (self.net.res_bus.vm_pu > 1.1)):
+                    if np.any((self.net.res_bus.vm_pu < 0.6) | (self.net.res_bus.vm_pu > 1.4)):
                         print(f"Voltage out of bounds at time step {time_step}, season {season}. Simulation aborted for this step.")
                         return None  # Skip saving this time ste
                     # load_data = self.net.load[['bus','p_mw','q_mvar']]
                     # Add entry to account for slack bus to match dimensions in GAT Trainning
                     # slack_bus_load = pd.DataFrame([[0, 0, 0]], columns=['bus', 'p_mw', 'q_mvar'])
+                    # plt.plot(self.net.load['p_mw'])
+                    # plt.plot(self.net.res_bus['vm_pu'])
+                    # plt.show()
                     # load_data = pd.concat([slack_bus_load,load_data], ignore_index=True)
                     lfa_results = {
                         'res_bus': deepcopy(self.net.res_bus.values),
@@ -116,9 +119,21 @@ class PowerFlowSimulator:
         # Reset loads to original before applying scaling factors
         self.net.load['p_mw'] = self.original_loads['p_mw']
         self.net.load['q_mvar'] = self.original_loads['q_mvar']
-        scaling_factor = self.load_factors.at[time_step, season]
-        self.net.load['p_mw'] *= scaling_factor
-        self.net.load['q_mvar'] *= scaling_factor
+        factor = np.random.uniform(-2, 2, 32)
+        # print(self.net.load['p_mw'])
+        # print(factor)
+        self.net.load['p_mw'] *= factor 
+        self.net.load['q_mvar'] *= factor 
+        # print(self.net.load['p_mw'])
+        # print(self.net.load['p_mw'].sum())
+        # print(self.net.load['p_mw'])
+        # self.net.load[i]['p_mw'] *= factor
+        # self.net.load[i]['q_mvar'] *= factor
+        # print(self.net.load[i]['q_mvar'] *= factor)
+
+        # scaling_factor = self.load_factors.at[time_step, season]
+        # self.net.load['p_mw'] *= scaling_factor
+        # self.net.load['q_mvar'] *= scaling_factor
 
     def plot_network(self, net, config_number):
         graph = pp.topology.create_nxgraph(net)
@@ -130,7 +145,7 @@ class PowerFlowSimulator:
         # plt.show()
 
     def save_results(self):
-        with h5py.File('raw_data/dataset_with_pl_ql.h5', 'w') as f:
+        with h5py.File('raw_data/dataset_random_loads.h5', 'w') as f:
             for net_id, net_data in self.all_results.items():
                 net_group = f.create_group(f'network_{net_id}')
                 static_group = net_group.create_group('network_config')
