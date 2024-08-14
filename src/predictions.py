@@ -16,7 +16,6 @@ def load_data_and_model(model_path, data_path):
 
     data_list, target_list = create_dataset(data_path)
     return model, data_list[1000], device, target_list  # Only return the first data point
-    # return model, data_list, device  # Only return the first data point
 
 
 def evaluate_model(model, data, device):
@@ -66,11 +65,6 @@ def visualize_graph(edges, scores):
     # plt.show()
     return plt
 
-# def update(frame):
-#     plt.set_data(target_list[frame])
-#     return plt
-
-
 
 def main():
     model_path = "checkpoints/best_model.pth"
@@ -78,32 +72,8 @@ def main():
     data_path = "raw_data/single_network_comparison.h5"
     model, first_data, device, target_list = load_data_and_model(model_path, data_path)
     output, edges, scores = evaluate_model(model, first_data, device)
-    # plt.plot(range(0,1440,1), target_list[:1440])
-    # plt.plot(target_list[1000],output.cpu().numpy())
-    # plt.plot(target_list[1440], output.cpu().numpy())
-    # plt.plot()
-    # print(target_list)
-    # plt.plot(len(output), output)
-
-    # fig, axis = plt.subplots()
-    # animated_plot, = axis.plot([],[])
-    # axis.plot(x,y)
-    # animation = FuncAnimation(
-    #     fig = visualize_graph(edges, scores),
-    #     func = update,
-    #     frames = len(target_list),
-    #     interval = 100,
-    # )
-
-    # print(target_list[1000], output)
     visualize_graph(edges, scores)
     print(scores)
-    # plt.figure(figsize=(15, 10))
-    # plt.plot(target_list[1000])
-    # plt.plot(output.cpu().numpy())
-    # plt.xticks(range(0,33,1))
-    # plt.yticks(np.arange(0.95,1,0.01))
-    # plt.title('Output - Targets')
     plt.show()
 
 
