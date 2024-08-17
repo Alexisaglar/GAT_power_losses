@@ -72,6 +72,22 @@ def main():
     data_path = "raw_data/single_network_comparison.h5"
     model, first_data, device, target_list = load_data_and_model(model_path, data_path)
     output, edges, scores = evaluate_model(model, first_data, device)
+
+
+    # Ensure both output and target_list[1000] are on the CPU and converted to NumPy arrays
+    if torch.is_tensor(output):
+        output = output.cpu().numpy()
+
+    target = target_list[1000].cpu().numpy() if torch.is_tensor(target_list[1000]) else target_list[1000]
+
+    # Plotting the data
+    plt.plot(output)
+    plt.plot(target)
+    plt.xticks(np.arange(0,33, step=1))
+    plt.yticks(np.arange(0.9,1.15, step=0.05))
+    plt.show()
+
+
     visualize_graph(edges, scores)
     print(scores)
     plt.show()
