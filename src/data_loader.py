@@ -62,4 +62,4 @@ def create_dataset(file):
 
     return data_list, target_list
 
-# create_dataset('raw_data/33_bus_with_pl_ql.h5')
+create_dataset('raw_data/random_loads_single_network.h5')

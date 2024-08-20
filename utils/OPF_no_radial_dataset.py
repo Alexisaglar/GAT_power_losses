@@ -8,10 +8,11 @@ from copy import deepcopy
 import h5py
 
 # Constants
-NUM_NETWORKS_TO_SIMULATE = 100
+NUM_NETWORKS_TO_SIMULATE = 1
 data = 'raw_data/load_seasons.csv'
-re_configuration = True
-network = nw.case33bw()
+re_configuration = False 
+network = nw.case3120sp()
+network_type = "mesh"
 
 class PowerFlowSimulator:
     def __init__(self, net, load_file):
@@ -62,18 +63,31 @@ class PowerFlowSimulator:
             if re_configuration == True:
                 self.configure_network()
             switch_matrix = self.service_matrix()
-            if self.is_network_radial(switch_matrix, incidence_matrix):
-                print("Configured a radial network. Now simulating loads...")
-                seasonal_results = self.simulate_loads()
-                if seasonal_results:
-                    self.successful_nets.append(deepcopy(self.net))
-                    self.all_results[len(self.successful_nets)] = seasonal_results
-                    print(f"Successfully saved configuration {len(self.successful_nets)}.")
-                    self.plot_network(self.net, len(self.successful_nets))  # Plot each successful network
+            if network_type == "radial": 
+                if self.is_network_radial(switch_matrix, incidence_matrix):
+                    print("Configured a radial network. Now simulating loads...")
+                    seasonal_results = self.simulate_loads()
+                    if seasonal_results:
+                        self.successful_nets.append(deepcopy(self.net))
+                        self.all_results[len(self.successful_nets)] = seasonal_results
+                        print(f"Successfully saved configuration {len(self.successful_nets)}.")
+                        self.plot_network(self.net, len(self.successful_nets))  # Plot each successful network
+                    else:
+                        print("Failed to converge for all seasons. Trying a new configuration...")
                 else:
-                    print("Failed to converge for all seasons. Trying a new configuration...")
+                    print("Configured network is not radial.")
+            ### for mesh networks
             else:
-                print("Configured network is not radial.")
+                    print("Configured mesh network. Now simulating loads...")
+                    seasonal_results = self.simulate_loads()
+                    if seasonal_results:
+                        self.successful_nets.append(deepcopy(self.net))
+                        self.all_results[len(self.successful_nets)] = seasonal_results
+                        print(f"Successfully saved configuration {len(self.successful_nets)}.")
+                        self.plot_network(self.net, len(self.successful_nets))  # Plot each successful network
+                    else:
+                        print("Failed to converge for all seasons. Trying a new configuration...")
+
 
     def simulate_loads(self):
         # Drop not in service lines and not neccesary columns
@@ -93,7 +107,7 @@ class PowerFlowSimulator:
                 self.reset_and_apply_loads(time_step, season)
                 try:
                     pp.runpp(self.net, verbose=True, numba=False)
-                    if np.any((self.net.res_bus.vm_pu < 0.6) | (self.net.res_bus.vm_pu > 1.4)):
+                    if np.any((self.net.res_bus.vm_pu < 0.75) | (self.net.res_bus.vm_pu > 1.5)):
                         print(f"Voltage out of bounds at time step {time_step}, season {season}. Simulation aborted for this step.")
                         return None  # Skip saving this time ste
                     # load_data = self.net.load[['bus','p_mw','q_mvar']]
@@ -109,6 +123,8 @@ class PowerFlowSimulator:
                         'res_line': deepcopy(self.net.res_line[self.net.line['in_service']].values)
                     }
                     time_step_results[time_step] = lfa_results
+                    # print(np.max(self.net.res_bus.values), np.min(self.net.res_bus.values))
+                    # print(self.net.res_bus)
                 except pp.LoadflowNotConverged:
                     print(f'Load flow did not converge for time step {time_step}, season {season}.')
                     return None  # Terminate and return None to indicate failure
@@ -119,21 +135,13 @@ class PowerFlowSimulator:
         # Reset loads to original before applying scaling factors
         self.net.load['p_mw'] = self.original_loads['p_mw']
         self.net.load['q_mvar'] = self.original_loads['q_mvar']
-        factor = np.random.uniform(-2, 2, 32)
-        # print(self.net.load['p_mw'])
-        # print(factor)
-        self.net.load['p_mw'] *= factor 
-        self.net.load['q_mvar'] *= factor 
-        # print(self.net.load['p_mw'])
-        # print(self.net.load['p_mw'].sum())
-        # print(self.net.load['p_mw'])
-        # self.net.load[i]['p_mw'] *= factor
-        # self.net.load[i]['q_mvar'] *= factor
-        # print(self.net.load[i]['q_mvar'] *= factor)
+        # factor = np.random.uniform(-2, 2, len(self.net.load))
+        # self.net.load['p_mw'] *= factor 
+        # self.net.load['q_mvar'] *= factor 
 
-        # scaling_factor = self.load_factors.at[time_step, season]
-        # self.net.load['p_mw'] *= scaling_factor
-        # self.net.load['q_mvar'] *= scaling_factor
+        scaling_factor = self.load_factors.at[time_step, season]
+        self.net.load['p_mw'] *= scaling_factor
+        self.net.load['q_mvar'] *= scaling_factor
 
     def plot_network(self, net, config_number):
         graph = pp.topology.create_nxgraph(net)
@@ -145,7 +153,7 @@ class PowerFlowSimulator:
         # plt.show()
 
     def save_results(self):
-        with h5py.File('raw_data/dataset_random_loads.h5', 'w') as f:
+        with h5py.File('raw_data/random_loads_single_network.h5', 'w') as f:
             for net_id, net_data in self.all_results.items():
                 net_group = f.create_group(f'network_{net_id}')
                 static_group = net_group.create_group('network_config')

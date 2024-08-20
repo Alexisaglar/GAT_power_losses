@@ -61,7 +61,7 @@ def main():
     )
 
     model = GATNet().to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
     criterion = torch.nn.MSELoss()
     
     patience = 15

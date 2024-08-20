@@ -70,6 +70,7 @@ def main():
     model_path = "checkpoints/best_model.pth"
     # data_path = "raw_data/network_results.h5"
     data_path = "raw_data/single_network_comparison.h5"
+    # data_path = "raw_data/random_loads_single_network.h5"
     model, first_data, device, target_list = load_data_and_model(model_path, data_path)
     output, edges, scores = evaluate_model(model, first_data, device)
 
@@ -83,7 +84,7 @@ def main():
     # Plotting the data
     plt.plot(output)
     plt.plot(target)
-    plt.xticks(np.arange(0,33, step=1))
+    plt.xticks(np.arange(0,len(output), step=1))
     plt.yticks(np.arange(0.9,1.15, step=0.05))
     plt.show()
 
