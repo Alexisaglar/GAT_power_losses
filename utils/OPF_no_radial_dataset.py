@@ -123,7 +123,7 @@ class PowerFlowSimulator:
                         'res_line': deepcopy(self.net.res_line[self.net.line['in_service']].values)
                     }
                     time_step_results[time_step] = lfa_results
-                    # print(np.max(self.net.res_bus.values), np.min(self.net.res_bus.values))
+                    print(np.max(self.net.res_bus.vm_pu.values), np.min(self.net.res_bus.vm_pu.values))
                     # print(self.net.res_bus)
                 except pp.LoadflowNotConverged:
                     print(f'Load flow did not converge for time step {time_step}, season {season}.')
@@ -135,13 +135,13 @@ class PowerFlowSimulator:
         # Reset loads to original before applying scaling factors
         self.net.load['p_mw'] = self.original_loads['p_mw']
         self.net.load['q_mvar'] = self.original_loads['q_mvar']
-        # factor = np.random.uniform(-2, 2, len(self.net.load))
-        # self.net.load['p_mw'] *= factor 
-        # self.net.load['q_mvar'] *= factor 
+        factor = np.random.uniform(-0.3, 0.5, len(self.net.load))
+        self.net.load['p_mw'] *= factor 
+        self.net.load['q_mvar'] *= factor 
 
-        scaling_factor = self.load_factors.at[time_step, season]
-        self.net.load['p_mw'] *= scaling_factor
-        self.net.load['q_mvar'] *= scaling_factor
+        # scaling_factor = self.load_factors.at[time_step, season]
+        # self.net.load['p_mw'] *= scaling_factor
+        # self.net.load['q_mvar'] *= scaling_factor
 
     def plot_network(self, net, config_number):
         graph = pp.topology.create_nxgraph(net)

@@ -10,7 +10,8 @@ def train_model(model, data_loader, criterion, optimizer, device, epoch, checkpo
         targets = targets.to(device)
 
         optimizer.zero_grad()
-        out, attention_weights = model(data)
+        # out, attention_weights = model(data)
+        out = model(data)
         loss = criterion(out, targets)
         loss.backward()
         optimizer.step()

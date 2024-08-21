@@ -5,12 +5,12 @@ import networkx as nx
 import numpy as np
 import torch
 from data_loader import create_dataset
-from model import GATNet
+from model import GraphSAGENet 
 from torch_geometric.data import Data
 
 def load_data_and_model(model_path, data_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = GATNet().to(device)
+    model = GraphSAGENet().to(device)
     model.load_state_dict(torch.load(model_path))
     model.eval()
 
@@ -22,12 +22,14 @@ def evaluate_model(model, data, device):
     model.eval()  # Set the model to evaluation mode
     with torch.no_grad():  # No gradients are needed
         data = data.to(device)
-        output, attention_weights = model(data)
-        edges = attention_weights[0].t().cpu().numpy()  # Transpose and convert to numpy
-        scores = (attention_weights[1].squeeze().cpu().numpy())  # Squeeze and convert to numpy
-        print(attention_weights[1])
+        output = model(data)
+        # output, attention_weights = model(data)
+        # edges = attention_weights[0].t().cpu().numpy()  # Transpose and convert to numpy
+        # scores = (attention_weights[1].squeeze().cpu().numpy())  # Squeeze and convert to numpy
+        # print(attention_weights[1])
 
-    return output, edges, scores
+    # return output, edges, scores
+    return output
 
 
 def visualize_graph(edges, scores):
@@ -72,7 +74,8 @@ def main():
     data_path = "raw_data/single_network_comparison.h5"
     # data_path = "raw_data/random_loads_single_network.h5"
     model, first_data, device, target_list = load_data_and_model(model_path, data_path)
-    output, edges, scores = evaluate_model(model, first_data, device)
+    # output, edges, scores = evaluate_model(model, first_data, device)
+    output = evaluate_model(model, first_data, device)
 
 
     # Ensure both output and target_list[1000] are on the CPU and converted to NumPy arrays
@@ -89,8 +92,8 @@ def main():
     plt.show()
 
 
-    visualize_graph(edges, scores)
-    print(scores)
+    # visualize_graph(edges, scores)
+    # print(scores)
     plt.show()
 
 

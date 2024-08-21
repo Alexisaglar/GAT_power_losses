@@ -1,3 +1,4 @@
+from torch_geometric.nn import GCNConv
 from test import test_model
 import matplotlib.pyplot as plt
 import torch
@@ -5,7 +6,7 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from torch_geometric.loader import DataLoader
 from data_loader import create_dataset
-from model import GATNet
+from model import GraphSAGENet
 from train import train_model
 
 
@@ -40,7 +41,6 @@ def main():
     )
 
     batch_size = 256
-
     train_loader = DataLoader(
         list(zip(data_train, target_train)),
         batch_size=batch_size,
@@ -60,8 +60,8 @@ def main():
         num_workers=6,
     )
 
-    model = GATNet().to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    model = GraphSAGENet().to(device)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
     criterion = torch.nn.MSELoss()
     
     patience = 15
@@ -69,7 +69,7 @@ def main():
     epochs_no_improve = 0
 
     train_losses, val_losses, test_losses = [], [], []
-    for epoch in range(10000):
+    for epoch in range(1000):
         train_loss = train_model(
             model, train_loader, criterion, optimizer, device, epoch
         )
